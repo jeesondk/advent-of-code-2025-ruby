@@ -7,28 +7,57 @@
 #   ruby day01.rb < input.txt
 #   ruby day01.rb input.txt
 
-def lines_from_argv_or_string
-  if ARGV[0]
-    File.readlines(ARGV[0], chomp: true)
-  else
-    STDIN.read.lines.map(&:strip)
+module AOC2025
+  module Day01
+
+    MOD=100
+    START=50
+
+    ParseError = Class.new(StandardError)
+
+    # Parse one instruction line eg. "L55" or "R7"
+    # Returns [dir, n]
+    def self.parse_line(line)
+      s = line.strip
+      raise ParseError, "empty line" if s.empty?
+
+      dir = s[0]
+      raise ParseError, "invalid direction: #{dir.inspect}" unless dir == "L" || dir == "R"
+
+      num_str = s[1..]
+      raise ParseError, "missing distance" if num_str.nil? || num_str.strip.empty?
+
+      n = Integer(num_str, 10)
+      raise ParseError, "negative distance" if n < 0
+
+      [dir, n]
+    rescue ArgumentError
+      raise ParseError, "invalid distance: #{num_str.inspect}"
+    end
+
+    # Solve Part 1. Accepts:
+    # - an IO (responds to #each_line) or
+    # - an array of strings (lines)
+    def self.solve(input)
+      lines =
+        if input.respond_to?(:each_line)
+          input.each_line
+        else
+          input.each
+        end
+
+      pos = START
+      hits = 0
+
+      lines.each do |line|
+        dir, n = parse_line(line)
+        step = n % MOD
+        pos += (dir == "L" ? -step : step)
+        pos %= MOD
+        hits += 1 if pos == 0
+      end
+
+      hits
+    end
   end
 end
-
-pos = 50
-hits = 0
-
-lines_from_argv_or_string.each do |line|
-  next if line.empty?
-  dir = line[0]
-  n = Integer(line[1..], 10)
-
-  step = n % 100
-  pos += (dir == "L" ? -step : step)
-
-  pos %= 100
-
-  hits += 1 if pos == 0
-end
-
-puts hits
