@@ -3,10 +3,10 @@
 # Advent of Code 2025 - Day 1 (Part 1 & 2)
 #
 # Usage:
-#   ruby day01.rb < input.txt (part 1)
-#   ruby day01.rb input.txt (part 1)
-#   ruby day01.rb 2 < input.txt (part 2)
-#   ruby day01.rb 2 input.txt (part 2)
+#   ruby day01.rb < day01_input.txt (part 1)
+#   ruby day01.rb day01_input.txt (part 1)
+#   ruby day01.rb 2 < day01_input.txt (part 2)
+#   ruby day01.rb 2 day01_input.txt (part 2)
 
 module AOC2025
   module Day01

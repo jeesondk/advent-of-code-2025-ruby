@@ -21,19 +21,19 @@ You can pipe input via STDIN or pass a file path. By default, Part 1 is executed
 ### Examples
 - Run Day 1 Part 1 with a file:
   ```sh
-  ruby bin/day01.rb bin/input.txt
+  ruby bin/day01.rb bin/day01_input.txt
   ```
 - Run Day 1 Part 1 via STDIN:
   ```sh
-  ruby bin/day01.rb < bin/input.txt
+  ruby bin/day01.rb < bin/day01_input.txt
   ```
 - Run Day 1 Part 2 with a file:
   ```sh
-  ruby bin/day01.rb 2 bin/input.txt
+  ruby bin/day01.rb 2 bin/day01_input.txt
   ```
 - Run Day 1 Part 2 via STDIN:
   ```sh
-  ruby bin/day01.rb 2 < bin/input.txt
+  ruby bin/day01.rb 2 < bin/day01_input.txt
   ```
 
 The script prints the numeric answer to stdout.
