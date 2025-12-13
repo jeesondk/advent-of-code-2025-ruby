@@ -10,7 +10,7 @@ class TESTAOC2025Day01 < Minitest::Test
   Day01 = AOC2025::Day01
 
   def solve_str(str)
-    AOC2025::Day01.solve(StringIO.new(str))
+    AOC2025::Day01.solve_part1(StringIO.new(str))
   end
 
   def test_example_password_is_3
@@ -55,7 +55,7 @@ class TESTAOC2025Day01 < Minitest::Test
   end
 
   def test_array_input_supported
-    assert_equal 1, Day01.solve(["R150\n"])
+    assert_equal 1, Day01.solve_part1(["R150\n"])
   end
 
   def test_parse_line_rejects_empty
@@ -80,5 +80,27 @@ class TESTAOC2025Day01 < Minitest::Test
   def test_parse_line_rejects_negative_distance
     err = assert_raises(Day01::ParseError) { Day01.parse_line("L-1") }
     assert_match(/negative distance/i, err.message)
+  end
+
+  def test_part2_example_password_is_6
+    input = <<-TXT
+      L68
+      L30
+      R48
+      L5
+      R60
+      L55
+      L1
+      L99
+      R14
+      L82
+    TXT
+
+    assert_equal 6, Day01.solve_part2(StringIO.new(input))
+  end
+
+  def test_part2_r1000_from_50_hits_zero_10_times
+    # Problem statement warning: from 50, R1000 crosses 0 ten times and returns to 50.
+    assert_equal 10, Day01.solve_part2(StringIO.new("R1000\n"))
   end
 end
