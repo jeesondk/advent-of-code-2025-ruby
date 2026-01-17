@@ -12,10 +12,12 @@ Solve Advent of Code 2025 in Ruby. This repository is a small, test‑driven pla
   - `lib/day01.rb` — Day 1 solution and helpers
   - `lib/day02.rb` — Day 2 solution and helpers
   - `lib/day03.rb` — Day 3 solution and helpers
+  - `lib/day04.rb` — Day 4 solution and helpers
 - `spec/` — RSpec tests
   - `spec/day01_spec.rb` — tests for Day 1
   - `spec/day02_spec.rb` — tests for Day 2
   - `spec/day03_spec.rb` — tests for Day 3
+  - `spec/day04_spec.rb` — tests for Day 4
 
 ## Requirements
 - Ruby (3.x recommended)
