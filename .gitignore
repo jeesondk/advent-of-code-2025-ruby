@@ -58,3 +58,9 @@ build-iPhoneSimulator/
 #
 # Jetbrains IDE
 .idea/
+
+# AI review instructions
+.aireviews/
+
+# Claude Code instructions
+.claude/
