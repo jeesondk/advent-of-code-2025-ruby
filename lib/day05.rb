@@ -60,6 +60,17 @@ module AOC2025
       @ingredient_ids.count { |id| fresh?(id) }
     end
 
+    # Solve part 2: Count total unique ingredient IDs across all fresh ranges
+    #
+    # Efficiently handles large ranges by merging overlapping ranges first,
+    # then calculating the total count without expanding into arrays.
+    #
+    # @return [Integer] the count of unique fresh ingredient IDs
+    def solve_part2
+      merged_ranges = merge_ranges(fresh_ranges)
+      merged_ranges.sum { |start_range, end_range| end_range - start_range + 1 }
+    end
+
     private
 
     # Parse all lines from input into fresh ranges and ingredient IDs
@@ -97,6 +108,33 @@ module AOC2025
       raise ParseError, "invalid input line: #{line.inspect}" unless line =~ /^\d+$/
 
       @ingredient_ids << line.to_i
+    end
+
+    # Merge overlapping or adjacent ranges
+    #
+    # @param ranges [Array<Array<Integer>>] array of [start, end] pairs
+    # @return [Array<Array<Integer>>] merged non-overlapping ranges
+    def merge_ranges(ranges)
+      return [] if ranges.empty?
+
+      sorted = ranges.sort_by(&:first)
+      merged = [sorted.first]
+
+      sorted[1..].each do |current_start, current_end|
+        last_start, last_end = merged.last
+        merge_or_append(merged, current_start, current_end, last_start, last_end)
+      end
+
+      merged
+    end
+
+    # Merge current range into last range or append as new range
+    def merge_or_append(merged, current_start, current_end, last_start, last_end)
+      if current_start <= last_end + 1
+        merged[-1] = [last_start, [last_end, current_end].max]
+      else
+        merged << [current_start, current_end]
+      end
     end
   end
 end
