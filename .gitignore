@@ -61,10 +61,10 @@ Gemfile.lock
 
 # AI review instructions
 .aireviews/
+.aireviews/rules.md
 
 # Claude Code instructions
 .claude/
-.aireviews/rules.md
 .claude/instructions.md
 .claude/project-rules.md
 .claude/review-rules.md
