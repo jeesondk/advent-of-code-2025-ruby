@@ -60,7 +60,7 @@ RSpec.describe AOC2025::Day02 do
     it 'handles multi-digit repeated halves' do
       expect(solver.invalid_part1?(10_10)).to be true
       expect(solver.invalid_part1?(999_999)).to be true
-      expect(solver.invalid_part1?(1212_1212)).to be true
+      expect(solver.invalid_part1?(12_121_212)).to be true
     end
 
     it 'handles numbers without leading zeros' do

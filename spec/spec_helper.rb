@@ -1,5 +1,14 @@
 # frozen_string_literal: true
 
+if ENV['COVERAGE']
+  require 'simplecov'
+  SimpleCov.start do
+    add_filter '/spec/'
+    add_filter '/bin/'
+    add_group 'Solutions', 'lib'
+  end
+end
+
 $LOAD_PATH.unshift(File.expand_path('../lib', __dir__))
 
 RSpec.configure do |config|

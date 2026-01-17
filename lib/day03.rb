@@ -2,7 +2,7 @@
 
 require 'stringio'
 
-# Advent of Code 2025 - Day 3 (Part 1)
+# Advent of Code 2025 - Day 3
 #
 # Usage:
 #   ruby day03.rb < day03_input.txt (part 1)
@@ -71,33 +71,43 @@ module AOC2025
     # that still leaves enough digits for remaining positions.
     #
     # @param digits [Array<Integer>] array of single digits
-    # @param n [Integer] number of digits to select
+    # @param num_digits [Integer] number of digits to select
     # @return [Integer] maximum n-digit joltage
-    def max_joltage_n_digits(digits, n)
-      return 0 if digits.length < n
+    def max_joltage_n_digits(digits, num_digits)
+      return 0 if digits.length < num_digits
 
       result = []
       start_idx = 0
 
-      n.times do |i|
-        remaining = n - i - 1
-        end_idx = digits.length - remaining - 1
-
-        max_val = -1
-        max_pos = start_idx
-
-        (start_idx..end_idx).each do |j|
-          if digits[j] > max_val
-            max_val = digits[j]
-            max_pos = j
-          end
-        end
-
+      num_digits.times do |i|
+        max_val, max_pos = find_max_digit_in_range(digits, start_idx, num_digits, i)
         result << max_val
         start_idx = max_pos + 1
       end
 
       result.join.to_i
+    end
+
+    # Find the maximum digit in a valid range
+    #
+    # @param digits [Array<Integer>] array of single digits
+    # @param start_idx [Integer] starting index
+    # @param num_digits [Integer] total number of digits to select
+    # @param current_pos [Integer] current position in selection
+    # @return [Array<Integer>] [max_value, max_position]
+    def find_max_digit_in_range(digits, start_idx, num_digits, current_pos)
+      end_idx = digits.length - (num_digits - current_pos - 1) - 1
+      max_val = -1
+      max_pos = start_idx
+
+      (start_idx..end_idx).each do |j|
+        if digits[j] > max_val
+          max_val = digits[j]
+          max_pos = j
+        end
+      end
+
+      [max_val, max_pos]
     end
 
     # Find the maximum two-digit joltage from a battery bank
@@ -113,11 +123,11 @@ module AOC2025
       max = 0
       # For each position, find the maximum digit that appears after it
       # and compute the two-digit number
-      (0...digits.length - 1).each do |i|
+      (0...(digits.length - 1)).each do |i|
         tens = digits[i]
         # Find the maximum units digit after position i
         max_units = digits[(i + 1)..].max
-        joltage = tens * 10 + max_units
+        joltage = (tens * 10) + max_units
         max = joltage if joltage > max
       end
       max
