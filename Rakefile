@@ -42,6 +42,12 @@ namespace :spec do
     t.pattern = 'spec/day05_spec.rb'
     t.rspec_opts = '--format documentation'
   end
+
+  desc 'Run Day 06 specs'
+  RSpec::Core::RakeTask.new(:day06) do |t|
+    t.pattern = 'spec/day05_spec.rb'
+    t.rspec_opts = '--format documentation'
+  end
 end
 
 # Coverage task

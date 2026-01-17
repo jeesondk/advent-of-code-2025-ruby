@@ -44,52 +44,31 @@ You can pipe input via STDIN or pass a file path. By default, Part 1 is executed
   ```sh
   ruby bin/day01.rb 2 < bin/day01_input.txt
   ```
-
 The script prints the numeric answer to stdout.
 
-## Input formats
-
-### Day 1
-Each line contains a direction and an integer distance:
-```text
-L68
-R7
-L30
-```
-
-The Day 1 solution simulates a 100‑position dial starting at position 50:
-- Part 1: apply each move and count how many times you land exactly on `0` after a move.
-- Part 2: count how many times you pass through `0` during each move (including multiple times on large steps).
-
-### Day 2
-Each line contains comma-separated ranges in `lo-hi` format:
-```text
-11-22,95-115,998-1012
-```
-
-### Day 3
-Each line contains a string of digits representing a battery bank:
-```text
-987654321111111
-811111111111119
-```
-
-The Day 3 solution finds the maximum joltage from each battery bank:
-- Part 1: for each bank, find the largest two-digit number that can be formed by selecting two batteries where the first appears before the second in the sequence.
-
 ## Running tests
-This repo uses RSpec. Install dependencies and run all tests with:
+
+This repo uses RSpec and Rake for managing test tasks. Install dependencies with:
 ```sh
 bundle install
 bundle exec rspec
 ```
 
-Run tests for a specific day:
-```sh
-bundle exec rspec spec/day01_spec.rb
-bundle exec rspec spec/day02_spec.rb
-bundle exec rspec spec/day03_spec.rb
-```
+### Using Rake Tasks
+
+The following Rake tasks are available to help you manage and run tests:
+
+- **Run all tests**:
+  ```sh
+  bundle exec rake test
+  ```
+
+- **Run tests for a specific day**:
+  ```sh
+  bundle exec rake test:day01
+  bundle exec rake test:day02
+  bundle exec rake test:day03
+  ```
 
 ## Adding new days
 1. Create an entry script at `bin/dayXX.rb`.

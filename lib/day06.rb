@@ -38,6 +38,7 @@ module AOC2025
     def initialize(input)
       @input = input.is_a?(String) ? StringIO.new(input) : input
       @problems = []
+      @lines = nil # Cache for input lines
 
       parse_input
     end
@@ -67,74 +68,223 @@ module AOC2025
       problems.sum { |problem| solve_problem(problem) }
     end
 
-    private
-
-    # Parse the worksheet input into problems
+    # Solve part 2: Calculate grand total reading numbers as vertical columns
     #
-    # Problems are arranged vertically in columns, separated by blank columns.
-    # The last row contains operators (* or +).
+    # In Part 2, each character position represents a column. Reading each
+    # column top-to-bottom (excluding operator row) forms one number.
     #
-    # @raise [ParseError] if the input is invalid
-    def parse_input
-      lines = @input.each_line.map(&:chomp)
-      return if lines.empty?
+    # @return [Integer] the sum of all problem answers
+    def solve_part2
+      lines = get_input_lines
+      return 0 if lines.empty?
 
-      # Pad all lines to same length
+      # Pad lines to same length
       max_length = lines.map(&:length).max
       grid = lines.map { |line| line.ljust(max_length) }
 
-      # Find column ranges for each problem (separated by all-space columns)
-      column_ranges = find_problem_columns(grid, max_length)
+      # Find separator columns
+      separator_columns = find_separator_columns(grid, max_length)
 
-      # Parse each problem
-      column_ranges.each do |start_col, end_col|
-        parse_problem_from_columns(grid, start_col, end_col)
+      # Build column ranges for each problem
+      column_ranges = build_column_ranges(separator_columns, max_length)
+
+      # Process each problem with Part 2 logic
+      column_ranges.sum do |start_col, end_col|
+        operator = extract_operator_from_range(grid, start_col, end_col)
+        numbers = parse_problem_part2(grid, start_col, end_col)
+        solve_problem({ numbers: numbers, operator: operator })
       end
     end
 
-    # Find the column ranges for each problem
+    private
+
+    # Get input lines, using cache if available or rewinding input
     #
-    # @param grid [Array<String>] the padded input lines
-    # @param max_length [Integer] maximum line length
-    # @return [Array<Array<Integer>>] array of [start_col, end_col] pairs
-    def find_problem_columns(grid, max_length)
-      ranges = []
-      start_col = nil
+    # @return [Array<String>] array of input lines
+    def get_input_lines
+      return @lines if @lines
 
-      (0...max_length).each do |col|
-        column_empty = grid.all? { |line| line[col] == ' ' }
+      @input.rewind if @input.respond_to?(:rewind)
+      @lines = @input.each_line.map(&:chomp)
+    end
 
-        if column_empty
-          ranges << [start_col, col - 1] if start_col
-          start_col = nil
-        elsif start_col.nil?
-          start_col = col
-        end
+    # Parse a problem section as vertical columns (Part 2 logic)
+    #
+    # @param grid [Array<String>] padded grid of input lines
+    # @param start_col [Integer] starting column index
+    # @param end_col [Integer] ending column index
+    # @return [Array<Integer>] array of numbers parsed from columns
+    def parse_problem_part2(grid, start_col, end_col)
+      numbers = []
+      number_rows = grid[0...-1] # Exclude operator row
+
+      (start_col..end_col).each do |col|
+        digits = number_rows.map { |row| row[col] }.reject { |char| char == ' ' }
+        numbers << digits.join.to_i unless digits.empty?
       end
 
-      ranges << [start_col, max_length - 1] if start_col
+      numbers
+    end
 
+    # Extract operator from a problem section
+    #
+    # @param grid [Array<String>] padded grid of input lines
+    # @param start_col [Integer] starting column index
+    # @param end_col [Integer] ending column index
+    # @return [String] the operator character
+    def extract_operator_from_range(grid, start_col, end_col)
+      operator_line = grid.last
+      operator = operator_line[start_col..end_col].strip
+      raise ParseError, "Invalid operator: #{operator}" unless %w[+ *].include?(operator)
+
+      operator
+    end
+
+    # Parse the worksheet input into problems
+    #
+    # Problems are arranged vertically and separated by columns of all spaces.
+    # Falls back to proximity-based matching if no separator columns exist.
+    #
+    # @raise [ParseError] if the input is invalid
+    def parse_input
+      lines = get_input_lines
+      return if lines.empty?
+
+      # Pad lines to same length
+      max_length = lines.map(&:length).max
+      grid = lines.map { |line| line.ljust(max_length) }
+
+      # Check if there are separator columns (preferred approach)
+      separator_columns = find_separator_columns(grid, max_length)
+
+      if separator_columns.any?
+        parse_with_separators(grid, separator_columns, max_length)
+      else
+        parse_with_proximity(lines)
+      end
+    end
+
+    # Parse using separator columns (for properly formatted input)
+    def parse_with_separators(grid, separators, max_length)
+      column_ranges = build_column_ranges(separators, max_length)
+
+      column_ranges.each do |start_col, end_col|
+        problem_lines = grid.map { |line| line[start_col..end_col].strip }
+        operator = problem_lines.last.strip
+        raise ParseError, "Invalid operator: #{operator}" unless %w[+ *].include?(operator)
+
+        numbers = problem_lines[0...-1].reject(&:empty?).map(&:to_i)
+        @problems << { numbers: numbers, operator: operator }
+      end
+    end
+
+    # Parse using proximity matching (for test examples without separators)
+    def parse_with_proximity(lines)
+      operator_line = lines.last
+      number_lines = lines[0...-1]
+
+      numbers_by_line = number_lines.map { |line| extract_numbers_with_positions(line) }
+      operators = find_operator_positions(operator_line)
+
+      operators.each do |op_pos, operator|
+        numbers = collect_numbers_for_operator(numbers_by_line, op_pos)
+        @problems << { numbers: numbers, operator: operator }
+      end
+    end
+
+    # Extract all numbers from a line with their positions
+    #
+    # @param line [String] the line to parse
+    # @return [Array<Hash>] array of {number: Integer, start: Integer, end: Integer}
+    def extract_numbers_with_positions(line)
+      numbers = []
+      current_num = ''
+      start_pos = nil
+
+      line.each_char.with_index do |char, idx|
+        current_num, start_pos = process_char(char, idx, current_num, start_pos, numbers)
+      end
+
+      finalize_number(current_num, start_pos, line.length, numbers)
+      numbers
+    end
+
+    # Process a single character while extracting numbers
+    def process_char(char, idx, current_num, start_pos, numbers)
+      if char =~ /\d/
+        [current_num + char, start_pos || idx]
+      elsif !current_num.empty?
+        numbers << { number: current_num.to_i, start: start_pos, end: idx - 1 }
+        ['', nil]
+      else
+        [current_num, start_pos]
+      end
+    end
+
+    # Finalize the last number if the line ends with a digit
+    def finalize_number(current_num, start_pos, line_length, numbers)
+      return if current_num.empty?
+
+      numbers << { number: current_num.to_i, start: start_pos, end: line_length - 1 }
+    end
+
+    # Find separator columns (all spaces across all rows)
+    def find_separator_columns(grid, max_length)
+      separators = []
+      (0...max_length).each do |col|
+        separators << col if grid.all? { |line| line[col] == ' ' }
+      end
+      separators
+    end
+
+    # Build column ranges from separator positions
+    def build_column_ranges(separators, max_length)
+      ranges = []
+      start_col = 0
+
+      separators.each do |sep_col|
+        ranges << [start_col, sep_col - 1] if start_col < sep_col
+        start_col = sep_col + 1
+      end
+
+      ranges << [start_col, max_length - 1] if start_col < max_length
       ranges
     end
 
-    # Parse a problem from a range of columns
+    # Find positions of operators in the operator line
     #
-    # @param grid [Array<String>] the input grid
-    # @param start_col [Integer] starting column index
-    # @param end_col [Integer] ending column index
-    def parse_problem_from_columns(grid, start_col, end_col)
-      # Extract the problem text from these columns
-      problem_lines = grid.map { |line| line[start_col..end_col].strip }
+    # @param operator_line [String] the line containing operators
+    # @return [Array<Array>] array of [column_index, operator_char] pairs
+    def find_operator_positions(operator_line)
+      positions = []
+      operator_line.each_char.with_index do |char, index|
+        positions << [index, char] if %w[+ *].include?(char)
+      end
+      positions
+    end
 
-      # Last line has the operator - find the first non-space character
-      operator_line = problem_lines.last
-      operator = operator_line.chars.find { |c| c != ' ' }
-      raise ParseError, "Invalid operator: #{operator}" unless %w[+ *].include?(operator)
+    # Collect numbers for a specific operator
+    #
+    # Numbers belong to an operator if they're horizontally closest to it
+    #
+    # @param numbers_by_line [Array<Array<Hash>>] numbers from each line
+    # @param op_pos [Integer] operator position
+    # @return [Array<Integer>] numbers for this operator
+    def collect_numbers_for_operator(numbers_by_line, op_pos)
+      result = []
 
-      # Extract numbers from the lines above the operator
-      numbers = problem_lines[0...-1].reject(&:empty?).map(&:to_i)
+      numbers_by_line.each do |line_numbers|
+        # Find the number closest to this operator
+        closest_num = line_numbers.min_by do |num_info|
+          # Calculate distance from operator to number's center
+          num_center = (num_info[:start] + num_info[:end]) / 2.0
+          (num_center - op_pos).abs
+        end
 
-      @problems << { numbers: numbers, operator: operator }
+        result << closest_num[:number] if closest_num
+      end
+
+      result
     end
   end
 end

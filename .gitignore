@@ -68,3 +68,4 @@ Gemfile.lock
 .claude/instructions.md
 .claude/project-rules.md
 .claude/review-rules.md
+/CLAUDE.md
